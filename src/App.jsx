@@ -45,7 +45,7 @@ function App() {
 </h1>
         <img src="/public/images/pokeball.png" alt="" />
         <div className="search-container">
-        <span className="search-icon"><img src= {search}/></span> 
+        <span className="search-icon"><img src= {search} alt="search"/></span> 
         <form className="form" onSubmit={handleSearch}>
           <input id = "search" type="text" 
           placeholder="pikachu"
@@ -58,6 +58,7 @@ function App() {
         <div>
           <button onClick={handleSurpriseMe} className="button">Surprise Me!!!</button>
         </div>
+
         
         {error && <p style={{ color: 'red' }}>{error}</p>}
             {pokemonData && pokemonData.name && (
@@ -69,9 +70,35 @@ function App() {
                     <p className="weight">Weight: {((pokemonData.weight*0.1).toFixed(2))} kg</p>
                     <p className="type">{pokemonData.types.map(typeInfo => typeInfo.type.name).join(' type, ')} type</p>
                 </div>
+                
             )}
-       
+
+          <div className="social-links">
+  {/* GitHub Link */}
+  <a 
+    href="https://github.com/mohittshukla" 
+    target="_blank" 
+    rel="noopener noreferrer"
+    style={{marginRight:"15px"}}
+    className="social-icon" // Add a class for styling
+  >
+    <i className="fab fa-github"></i>
+  </a>
+
+  {/* Email Link */}
+  <a 
+    href="mailto:mohittshukla1@gmail.com" 
+    target="_blank" 
+    rel="noopener noreferrer"
+    className="social-icon" // Add a class for styling
+  >
+    <i className="fas fa-envelope"></i>
+  </a>
+</div>
+
+    
       </div>
+      
   );
 }
 

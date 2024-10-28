@@ -154,3 +154,25 @@ img {
     width: 100%; /* Make button full-width on mobile */
   }
 }
+
+.social-links {
+  position: fixed; /* Fixes the position to the viewport */
+  bottom: 20px;    /* Distance from the bottom */
+  right: 20px;     /* Distance from the right */
+  display: flex;   /* Use flexbox for layout */
+  flex-direction: row; /* Align icons vertically */
+  align-items: center;
+
+   /* Center icons horizontally */
+}
+
+.social-icon {
+  margin: 5px 0; /* Space between icons */
+  font-size: 24px; /* Icon size */
+  color: #333; /* Icon color */
+  transition: color 0.3s; /* Smooth transition for hover effect */
+}
+
+.social-icon:hover {
+  color: #007bff; /* Change color on hover */
+}
