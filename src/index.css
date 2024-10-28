@@ -97,6 +97,7 @@ img {
   border-radius: 10px;
   width: 150px;
   height: 40px;
+ 
   background-color: lavender;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for 3D effect */
   transition: transform 0.2s ease;

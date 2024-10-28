@@ -56,7 +56,7 @@ function App() {
 
         </div>
         <div>
-          <button onClick={handleSurpriseMe} className="button">Surpise Me!!!</button>
+          <button onClick={handleSurpriseMe} className="button">Surprise Me!!!</button>
         </div>
         
         {error && <p style={{ color: 'red' }}>{error}</p>}
