@@ -27,7 +27,7 @@ h1 {
 
 .form {
   display: flex;
-  justify-content: space-between; /* Use space-between to keep items on edges */
+  justify-content: space-between; 
   width: 100%;
   margin: 20px 0px;
 }
@@ -38,19 +38,19 @@ input {
   transition: width 0.3s ease-in-out;
 }
 
-/* Updated styles for the card */
+
 .card {
-  border: 1px solid rgba(0, 0, 0, 0.1); /* Light border for contrast */
-  border-radius: 10px; /* Rounded corners for a softer look */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for 3D effect */
+  border: 1px solid rgba(0, 0, 0, 0.1); 
+  border-radius: 10px; 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
   padding: 20px;
   margin-top: 20px;
-  background-color: white; /* Background color for the card */
+  background-color: white; 
   transition: transform 0.34s ease, box-shadow 0.34s ease;
 }
 
 .card:hover {
-  transform: translateY(-5px); /* Move the card up */
+  transform: translateY(-5px); 
   box-shadow: 0 8px 16px yellow;
   cursor: pointer;
   background-color: snow;
@@ -60,21 +60,21 @@ img {
   border-radius: 20px;
 }
 
-/* Container for search icon and input */
+
 .search-container {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-/* Style the search icon */
+
 .search-icon {
   font-size: 1.5rem;
   margin-right: 5px;
   cursor: pointer;
 }
 
-/* Style the input */
+
 #search {
   width: 0;
   padding: 5px;
@@ -85,63 +85,64 @@ img {
   visibility: hidden;
 }
 
-/* Show input on icon hover */
+
 .search-container:hover #search {
-  width: 150px; /* Adjust as needed */
+  width: 150px; 
   opacity: 1;
   visibility: visible;
+  
 }
 
-/* Style for the Surprise Me button */
+
 .button {
   border-radius: 10px;
   width: 150px;
   height: 40px;
  
   background-color: lavender;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for 3D effect */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
   transition: transform 0.2s ease;
-  /* Removed margin-left auto */
+
 }
 
 .button:hover {
-  transform: translateY(-5px); /* Move the button up */
+  transform: translateY(-5px);
+
   box-shadow: 0 8px 16px navy;
   cursor: pointer;
   background-color: snow;
 }
 
 .button:active {
-  transform: scale(0.95); /* Scale down when the button is clicked */
+  transform: scale(0.95);
 }
 
 .type {
-  display: inline-block; /* Makes the types display inline */
-  padding: 8px 15px; /* Padding around the types */
-  border-radius: 20px; /* Larger rounded corners for types */
-  background-color: #71dede; /* Soft orange background */
-  margin-top: 10px; /* Space above the types */
-  font-weight: bold; /* Make types text bold */
-  transition: background-color 0.3s ease; /* Smooth transition for hover */
-}
+  display: inline-block;
+  padding: 8px 15px; 
+  border-radius: 20px; 
+  background-color: #71dede; 
+  margin-top: 10px; 
+  font-weight: bold; 
+  transition: background-color 0.3s ease;}
 
 .type:hover {
-  background-color: #ffb74d; /* Darker shade on hover */
+  background-color: #ffb74d;
 }
 
 .height, .weight {
-  font-size: 18px; /* Size of the text for height and weight */
-  margin: 10px 0; /* Space between paragraphs */
+  font-size: 18px; 
+  margin: 10px 0; 
   color: #424242;
 }
 
 .card h2 {
-  font-size: 26px; /* Size of the Pokémon name */
-  margin-bottom: 15px; /* Space below the name */
-  color: #1976d2; /* Color for the name */
+  font-size: 26px; 
+  margin-bottom: 15px; 
+  color: #1976d2; 
 }
 
-/* Media queries for responsiveness */
+
 @media (max-width: 768px) {
   .form {
     justify-content: center; /* Center items in form on smaller screens */
@@ -149,30 +150,80 @@ img {
   }
 
   .button {
-    margin: 20px 0; /* Add spacing above and below button */
-    display: block; /* Make button a block element */
-    width: 100%; /* Make button full-width on mobile */
+    margin: 20px 0;
+    display: block; 
+    width: 100%; 
   }
 }
 
 .social-links {
-  position: fixed; /* Fixes the position to the viewport */
-  bottom: 20px;    /* Distance from the bottom */
-  right: 20px;     /* Distance from the right */
-  display: flex;   /* Use flexbox for layout */
-  flex-direction: row; /* Align icons vertically */
+  position: fixed; 
+  bottom: 20px;    
+  right: 20px;     
+  display: flex;  
+  flex-direction: row; 
   align-items: center;
 
-   /* Center icons horizontally */
+   
 }
 
 .social-icon {
-  margin: 5px 0; /* Space between icons */
-  font-size: 24px; /* Icon size */
-  color: #333; /* Icon color */
-  transition: color 0.3s; /* Smooth transition for hover effect */
+  margin: 5px 0; 
+  font-size: 24px;
+  color: #333; 
+  transition: color 0.3s; 
 }
 
 .social-icon:hover {
-  color: #007bff; /* Change color on hover */
+  color: #007bff;
+}
+
+.suggestions-list {
+  position: absolute;
+  top: 71%;
+  
+  width: fit-content;
+  background-color: darkgray; 
+  border: 1px solid gray;
+  list-style: none;
+  border-radius: 8px;
+  margin: 0;
+  padding: 0;
+  max-height: 150px;
+  overflow-y: auto; /* for scroll */
+  z-index: 1000; 
+  width: 100%; /* Matching width of the input */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);}
+
+.suggestions-list li {
+  padding: 10px;
+  cursor: pointer;
+  color: #FFFFFF;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.suggestions-list li:hover {
+  background-color: #0288D1; 
+  color: #FFFFFF; 
+}
+
+@media (max-width: 600px) {
+  .search-container {
+    width: 35%; 
+  }
+
+  .search-icon img {
+    width: 30px; 
+    height: 30px; 
+  }
+
+  input[type="text"] {
+    margin-top: 5px; 
+  }
+  .suggestions-list{
+    margin-left: 35px;
+    border-radius: 5px;
+    width: 160px;
+   
+  }
 }
