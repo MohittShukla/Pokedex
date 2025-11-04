@@ -1,7 +1,7 @@
-import React, { useEffect,useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
 import './index.css';
-import pokedex from './pokedex.webp';
 import search from './search.png';
 
 function App() {
@@ -11,14 +11,59 @@ function App() {
   const [pokemonNames, setPokemonNames] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const inputRef = useRef(null); 
+  const [loading, setLoading] = useState(false);
+  const inputRef = useRef(null);
+
+  const TYPE_COLORS = {
+    normal: '#a8a878',
+    fire: '#ff5733',
+    water: '#3399ff',
+    electric: '#ffcc33',
+    grass: '#5cb85c',
+    ice: '#6ad6f0',
+    fighting: '#c03028',
+    poison: '#a040a0',
+    ground: '#e0c068',
+    flying: '#a890f0',
+    psychic: '#ff6b9d',
+    bug: '#a8b820',
+    rock: '#b8a038',
+    ghost: '#705898',
+    dragon: '#7038f8',
+    dark: '#705848',
+    steel: '#b8b8d0',
+    fairy: '#ffb7fa'
+  };
+
+  // --- ENHANCEMENT 1: Added Background Colors ---
+  // These will be used for the page background
+  const TYPE_COLORS_BG = {
+    normal: 'linear-gradient(120deg, #a8a878 0%, #c6c6a7 100%)',
+    fire: 'linear-gradient(120deg, #ff5733 0%, #f9a06b 100%)',
+    water: 'linear-gradient(120deg, #3399ff 0%, #9db7f5 100%)',
+    electric: 'linear-gradient(120deg, #ffcc33 0%, #fbe37b 100%)',
+    grass: 'linear-gradient(120deg, #5cb85c 0%, #a7db8d 100%)',
+    ice: 'linear-gradient(120deg, #6ad6f0 0%, #c4e7e7 100%)',
+    fighting: 'linear-gradient(120deg, #c03028 0%, #d67873 100%)',
+    poison: 'linear-gradient(120deg, #a040a0 0%, #c183c1 100%)',
+    ground: 'linear-gradient(120deg, #e0c068 0%, #e9d6a2 100%)',
+    flying: 'linear-gradient(120deg, #a890f0 0%, #c5b7f5 100%)',
+    psychic: 'linear-gradient(120deg, #ff6b9d 0%, #fba8c0 100%)',
+    bug: 'linear-gradient(120deg, #a8b820 0%, #c6d16e 100%)',
+    rock: 'linear-gradient(120deg, #b8a038 0%, #d1c17d 100%)',
+    ghost: 'linear-gradient(120deg, #705898 0%, #a291b8 100%)',
+    dragon: 'linear-gradient(120deg, #7038f8 0%, #a885fa 100%)',
+    dark: 'linear-gradient(120deg, #705848 0%, #a29188 100%)',
+    steel: 'linear-gradient(120deg, #b8b8d0 0%, #d1d1e0 100%)',
+    fairy: 'linear-gradient(120deg, #ffb7fa 0%, #f4c2d0 100%)',
+    default: 'linear-gradient(120deg, #1A202C 0%, #2D3748 100%)' // A nice dark default
+  };
 
   useEffect(() => {
     const fetchPokemonNames = async () => {
-      setError('');
       try {
-        let response = await axios.get("https://pokeapi.co/api/v2/pokemon?limit=1000");
-        const names = response.data.results.map(pokemon => pokemon.name);
+        const response = await axios.get("https://pokeapi.co/api/v2/pokemon?limit=1000");
+        const names = response.data.results.map(p => p.name);
         setPokemonNames(names);
       } catch (err) {
         console.error('Error fetching Pokémon names:', err);
@@ -32,33 +77,37 @@ function App() {
     setPokemon(value);
 
     if (value) {
-      const filteredSuggestions = pokemonNames.filter(name => {
-        return name.toLowerCase().startsWith(value.toLowerCase());
-      });
-
+      const filteredSuggestions = pokemonNames
+        .filter(name => name.toLowerCase().startsWith(value.toLowerCase()))
+        .slice(0, 10);
       setSuggestions(filteredSuggestions);
-      setShowSuggestions(true); // Show suggestions when typing
+      setShowSuggestions(true);
     } else {
-      setShowSuggestions(false); // Hide suggestions if input is empty
+      setShowSuggestions(false);
     }
   };
 
   const handleSuggestionClick = (suggestion) => {
     setPokemon(suggestion);
     setSuggestions([]);
+    setShowSuggestions(false);
     fetchPokemonData(suggestion);
-    inputRef.current.focus();
-    setShowSuggestions(false); // Hide suggestions after selecting
   };
 
   const fetchPokemonData = async (id = pokemon) => {
+    if (!id) return;
+
     setError('');
+    setLoading(true);
+
     try {
-      let response = await axios.get(`https://pokeapi.co/api/v2/pokemon/${id.toLowerCase()}`);
+      const response = await axios.get(`https://pokeapi.co/api/v2/pokemon/${id.toLowerCase()}`);
       setPokemonData(response.data);
     } catch (err) {
-      setError('Pokémon Not Found');
+      setError('Pokémon not found. Try another name or ID.');
       setPokemonData(null);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -66,89 +115,444 @@ function App() {
     e.preventDefault();
     fetchPokemonData();
     setSuggestions([]);
-    setShowSuggestions(false); // Hide suggestions after search
+    setShowSuggestions(false);
   };
 
   const handleSurpriseMe = () => {
     const random = Math.floor(Math.random() * 898) + 1;
-    console.log("Fetching Pokémon with ID:", random);
     fetchPokemonData(random.toString());
+    setPokemon('');
   };
 
-  const getHighQualityImage = (name) => {
-    return `https://img.pokemondb.net/artwork/large/${name}.jpg`;
+  // --- FIX 1: Changed function to take ID and use transparent PNG source ---
+  const getHighQualityImage = (id) => {
+    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
   };
+
+  const getStatColor = (value) => {
+    if (value >= 100) return '#5cb85c';
+    if (value >= 60) return '#3399ff';
+    if (value >= 40) return '#ffcc33';
+    return '#ff5733';
+  };
+
+  // --- ENHANCEMENT 2: Calculate the background color ---
+  const sceneBackground = pokemonData
+    ? TYPE_COLORS_BG[pokemonData.types[0].type.name]
+    : TYPE_COLORS_BG.default;
 
   return (
-    <div id="container">
-      <h1>
-        <img src={pokedex} alt="pokedex" style={{ height: "100px", width: "300px", marginTop: "10px" }} />
-      </h1>
-      <img src="/public/images/pokeball.png" alt="" />
-      <div className="search-container"
-        onMouseEnter={() => setShowSuggestions(true)}
-        onMouseLeave={() => setShowSuggestions(false)}
-      >
-        <span className="search-icon"><img src={search} alt="search" /></span>
-        <form className="form" onSubmit={handleSearch}>
-          <input
-            id="search"
-            type="text"
-            placeholder="pikachu"
-            value={pokemon}
-            ref={inputRef}
-            onChange={handleInputChange}
-            onFocus={() => setShowSuggestions(pokemon.length > 0)} // Show suggestions when input is focused
-          />
-        </form>
-        {showSuggestions && suggestions.length > 0 && (
-          <ul className="suggestions-list">
-            {suggestions.map((suggestion, index) => (
-              <li key={index} onClick={() => handleSuggestionClick(suggestion)}>
-                {suggestion}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      <div>
-        <button onClick={handleSurpriseMe} className="button">Surprise Me!!!</button>
-      </div>
-
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {pokemonData && pokemonData.name && (
-        <div className="card" style={{ marginTop: '20px' }}>
-          <h2>{pokemonData.name.charAt(0).toUpperCase() + pokemonData.name.slice(1)}</h2>
-          <img src={getHighQualityImage(pokemonData.name)} alt={pokemonData.name}
-            style={{ height: '150px', width: '180px' }} />
-          <p className="height">Height: {((pokemonData.height * 0.1).toFixed(2))} m</p>
-          <p className="weight">Weight: {((pokemonData.weight * 0.1).toFixed(2))} kg</p>
-          <p className="type">{pokemonData.types.map(typeInfo => typeInfo.type.name).join(' type, ')} type</p>
-        </div>
-      )}
-
-      <div className="social-links">
-        <a
-          href="https://github.com/mohittshukla"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ marginRight: "15px" }}
-          className="social-icon"
+    // This motion.div now controls the animated background
+    <motion.div
+      className="scene-manager"
+      style={{
+        width: '100%',
+        minHeight: '100vh',
+        display: 'flex',
+        justifyContent: 'center'
+      }}
+      animate={{ background: sceneBackground }}
+      transition={{ duration: 1.0, ease: 'easeInOut' }}
+    >
+      {/* Your original app-container layout is completely preserved */}
+      <div className="app-container">
+        {/* Header */}
+        <motion.header
+          className="header"
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
         >
-          <i className="fab fa-github"></i>
-        </a>
+          <div className="logo-container">
+            <div className="pokeball-decoration"></div>
+            <div className="pokeball-decoration"></div>
+          </div>
+          <motion.h1
+            className="header-title"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
+            PokéDex
+          </motion.h1>
+          <motion.p
+            className="header-subtitle"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            Catch 'em All - Explore Every Pokémon
+          </motion.p>
+        </motion.header>
 
-        <a
-          href="mailto:mohittshukla1@gmail.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="social-icon"
+        {/* Search Section */}
+        <motion.section
+          className="search-section"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
         >
-          <i className="fas fa-envelope"></i>
-        </a>
+          <div className="search-wrapper">
+            <motion.div
+              className="search-container"
+              whileTap={{ scale: 0.98 }}
+            >
+              <img src={search} alt="Search" className="search-icon" />
+              <form className="search-form" onSubmit={handleSearch}>
+                <input
+                  ref={inputRef}
+                  type="text"
+                  className="search-input"
+                  placeholder="Search Pokémon..."
+                  value={pokemon}
+                  onChange={handleInputChange}
+                  onFocus={() => setShowSuggestions(pokemon.length > 0)}
+                />
+              </form>
+            </motion.div>
+
+            <AnimatePresence>
+              {showSuggestions && suggestions.length > 0 && (
+                <motion.ul
+                  className="suggestions-list"
+                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {suggestions.map((suggestion, index) => (
+                    <motion.li
+                      key={suggestion}
+                      className="suggestion-item"
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.02 }}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      {suggestion}
+                    </motion.li>
+                  ))}
+                </motion.ul>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <motion.div
+            className="action-buttons"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+          >
+            <motion.button
+              type="submit"
+              className="btn"
+              onClick={handleSearch}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Search
+            </motion.button>
+            <motion.button
+              className="btn btn-secondary"
+              onClick={handleSurpriseMe}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Surprise Me
+            </motion.button>
+          </motion.div>
+        </motion.section>
+
+        {/* Loading State */}
+        <AnimatePresence mode="wait">
+          {loading && (
+            <motion.div
+              className="loading-container"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+            >
+              <div className="spinner-pokeball" />
+              <p className="loading-text">Catching Pokémon...</p>
+            </motion.div>
+          )}
+
+          {/* Error State */}
+          {error && !loading && (
+            <motion.div
+              className="error-container"
+              initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            >
+              <h3 className="error-title">Oops!</h3>
+              <p className="error-message">{error}</p>
+            </motion.div>
+          )}
+
+          {/* Pokemon Card */}
+          {pokemonData && !loading && (
+            <motion.div
+              className="pokemon-card"
+              initial={{ opacity: 0, y: 50, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 50, scale: 0.9 }}
+              transition={{
+                type: "spring",
+                stiffness: 100,
+                damping: 15,
+                duration: 0.6
+              }}
+            >
+              {/* Header */}
+              <div className="pokemon-header">
+                <div className="pokemon-header-content">
+                  <div className="pokemon-info-left">
+                    <motion.h2
+                      className="pokemon-name"
+                      initial={{ opacity: 0, x: -30 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.2, type: "spring" }}
+                    >
+                      {pokemonData.name}
+                    </motion.h2>
+                    <motion.p
+                      className="pokemon-id"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.3 }}
+                    >
+                      #{String(pokemonData.id).padStart(3, '0')}
+                    </motion.p>
+                    <motion.div
+                      className="pokemon-types"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.4 }}
+                    >
+                      {pokemonData.types.map((typeInfo, index) => (
+                        <motion.span
+                          key={typeInfo.type.name}
+                          className="type-badge"
+                          style={{ backgroundColor: TYPE_COLORS[typeInfo.type.name] }}
+                          initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
+                          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                          transition={{
+                            delay: 0.5 + index * 0.1,
+                            type: "spring",
+                            stiffness: 200
+                          }}
+                          whileHover={{ scale: 1.1, rotate: 5 }}
+                        >
+                          {typeInfo.type.name}
+                        </motion.span>
+                      ))}
+                    </motion.div>
+                  </div>
+                  <motion.div
+                    className="pokemon-image-container"
+                    initial={{ opacity: 0, scale: 0.5, rotate: -20 }}
+                    animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                    transition={{
+                      delay: 0.3,
+                      type: "spring",
+                      stiffness: 100,
+                      damping: 12
+                    }}
+                    whileHover={{ scale: 1.05, rotate: 5 }}
+                  >
+                    {/* --- FIX 2: Changed to pass pokemonData.id --- */}
+                    <img
+                      src={getHighQualityImage(pokemonData.id)}
+                      alt={pokemonData.name}
+                      className="pokemon-image"
+                    />
+                  </motion.div>
+                </div>
+              </div>
+
+              {/* Body */}
+              <div className="pokemon-body">
+                {/* Physical Stats */}
+                <motion.div
+                  className="detail-card"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  style={{ marginBottom: '2rem' }}
+                >
+                  <h3 className="detail-title">Physical Attributes</h3>
+                  <div className="physical-stats">
+                    <motion.div
+                      className="physical-stat"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.6 }}
+                    >
+                      <div className="physical-stat-value">
+                        {(pokemonData.height / 10).toFixed(1)}m
+                      </div>
+                      <div className="physical-stat-label">Height</div>
+                    </motion.div>
+                    <motion.div
+                      className="physical-stat"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.7 }}
+                    >
+                      <div className="physical-stat-value">
+                        {(pokemonData.weight / 10).toFixed(1)}kg
+                      </div>
+                      <div className="physical-stat-label">Weight</div>
+                    </motion.div>
+                  </div>
+                </motion.div>
+
+                {/* Stats */}
+                <motion.div
+                  className="stats-section"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7 }}
+                >
+                  <h3 className="section-title">Base Stats</h3>
+                  <div className="stats-grid">
+                    {pokemonData.stats.map((stat, index) => (
+                      <motion.div
+                        key={stat.stat.name}
+                        className="stat-item"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.8 + index * 0.05 }}
+                        whileHover={{ y: -4 }}
+                      >
+                        <div className="stat-label">
+                          <span className="stat-name">
+                            {stat.stat.name.replace('-', ' ')}
+                          </span>
+                          <span className="stat-value">{stat.base_stat}</span>
+                        </div>
+                        <div className="stat-bar-container">
+                          <motion.div
+                            className="stat-bar"
+                            style={{
+                              backgroundColor: getStatColor(stat.base_stat)
+                            }}
+                            initial={{ width: 0 }}
+                            animate={{ width: `${(stat.base_stat / 255) * 100}%` }}
+                            transition={{
+                              delay: 1 + index * 0.05,
+                              duration: 0.8,
+                              ease: [0.4, 0, 0.2, 1]
+                            }}
+                          />
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+
+                {/* Abilities and Moves */}
+                <div className="details-grid">
+                  <motion.div
+                    className="detail-card"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.3 }}
+                  >
+                    <h3 className="detail-title">Abilities</h3>
+                    <div className="abilities-list">
+                      {pokemonData.abilities.map((ability, index) => (
+                        <motion.span
+                          key={ability.ability.name}
+                          className="ability-badge"
+                          initial={{ opacity: 0, scale: 0.5 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{
+                            delay: 1.4 + index * 0.1,
+                            type: "spring",
+                            stiffness: 200
+                          }}
+                          whileHover={{ scale: 1.1, rotate: 2 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          {ability.ability.name.replace('-', ' ')}
+                          {ability.is_hidden && ' (Hidden)'}
+                        </motion.span>
+                      ))}
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    className="detail-card"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.4 }}
+                  >
+                    <h3 className="detail-title">
+                      Moves ({pokemonData.moves.length})
+                    </h3>
+                    <div className="moves-grid">
+                      {pokemonData.moves.slice(0, 20).map((move, index) => (
+                        <motion.div
+                          key={move.move.name}
+                          className="move-badge"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{
+                            delay: 1.5 + index * 0.02,
+                            type: "spring"
+                          }}
+                          whileHover={{ scale: 1.05, y: -2 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          {move.move.name.replace('-', ' ')}
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Footer */}
+        <motion.footer
+          className="footer"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5 }}
+        >
+          <p>Gotta Catch 'Em All!</p>
+          <div className="social-links">
+            <motion.a
+              href="https://github.com/mohittshukla"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="social-icon"
+              whileHover={{ y: -4, scale: 1.05 }}
+              whileTap={{ y: 0 }}
+            >
+              <i className="fab fa-github"></i>
+            </motion.a>
+            <motion.a
+              href="mailto:mohittshukla1@gmail.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="social-icon"
+              whileHover={{ y: -4, scale: 1.05 }}
+              whileTap={{ y: 0 }}
+            >
+              <i className="fas fa-envelope"></i>
+            </motion.a>
+          </div>
+        </motion.footer>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
